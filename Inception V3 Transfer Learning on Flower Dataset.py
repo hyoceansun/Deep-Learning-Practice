@@ -73,20 +73,20 @@ def create_image_lists(testing_percentage,validation_percentage):
     return result
 
 def get_image_path(image_lists, image_dir, label_name, index, category):
-    label_lists=image_lists[label_name]
-    category_list=label_lists[category]
-    mod_index=index % len(category_list)
+    label_lists=image_lists[label_name] #Get dictionary for one type of flower
+    category_list=label_lists[category] #For that type of flower, get a list of basename in training/validation/testing dataset
+    mod_index=index % len(category_list)  #This makes sure mod_index <= number of files in that flower folder
     base_name=category_list[mod_index]
-    sub_dir=label_lists['dir']
+    sub_dir=label_lists['dir'] #flower type name
     full_path=os.path.join(image_dir,sub_dir,base_name)
     return full_path
 
-def get_bottleneck_path(image_lists,label_name,index,category):
+def get_bottleneck_path(image_lists,label_name,index,category): #Create txt cache files to store computed bottleneck values
     return get_image_path(image_lists,cache_dir,label_name,index,category)+'.txt'
 
 def run_bottleneck_on_image(sess,image_data,image_data_tensor,bottleneck_tensor):
     bottleneck_values=sess.run(bottleneck_tensor,{image_data_tensor:image_data})
-    bottleneck_values=np.squeeze(bottleneck_values)
+    bottleneck_values=np.squeeze(bottleneck_values) #np.squeeze removes dimensions where dim=1; here bottleneck_values has four dimensions
     #final_bottleneck_values=[x[0] for x in bottleneck_values]
     return bottleneck_values
 
@@ -119,7 +119,7 @@ def get_random_cached_bottlenecks(sess,n_classes,image_lists,how_many, category,
     ground_truths=[]
     for _ in np.arange(how_many):
         label_index=random.randrange(n_classes)
-        label_name=list(image_lists.keys())[label_index]
+        label_name=list(image_lists.keys())[label_index] #Randomly get a class
         image_index=random.randrange(65536)
         bottleneck=get_or_create_bottleneck(sess,image_lists,label_name,image_index,category,jpeg_data_tensor,bottleneck_tensor)
         ground_truth=np.zeros(n_classes,dtype=np.float32)
